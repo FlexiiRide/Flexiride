@@ -10,7 +10,7 @@ const loginSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-type LoginState = {
+export type LoginState = {
   errors?: {
     email?: string[];
     password?: string[];
@@ -43,13 +43,13 @@ export async function login(
     if (!user) {
       return { errors: { server: ['Invalid credentials'] } };
     }
-    
+
     // This is mock auth, so we just check against the stored hash
     if (user.passwordHash !== password) {
-       return { errors: { server: ['Invalid credentials'] } };
+      return { errors: { server: ['Invalid credentials'] } };
     }
 
-    cookies().set('session-userid', user.id, {
+    (await cookies()).set('session-userid', user.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 60 * 24 * 7, // 1 week
@@ -63,7 +63,7 @@ export async function login(
 }
 
 export async function logout() {
-  cookies().delete('session-userid');
+  (await cookies()).delete('session-userid');
   redirect('/login');
 }
 
@@ -74,12 +74,12 @@ const signupSchema = z.object({
   role: z.enum(['client', 'owner']),
 });
 
-type SignupState = {
+export type SignupState = {
   errors?: {
-    name?: string[],
+    name?: string[];
     email?: string[];
     password?: string[];
-    role?: string[],
+    role?: string[];
     server?: string[];
   };
   message?: string | null;
@@ -89,7 +89,9 @@ export async function signup(
   prevState: SignupState,
   formData: FormData
 ): Promise<SignupState> {
-   const validatedFields = signupSchema.safeParse(Object.fromEntries(formData.entries()));
+  const validatedFields = signupSchema.safeParse(
+    Object.fromEntries(formData.entries())
+  );
 
   if (!validatedFields.success) {
     return {
@@ -102,25 +104,31 @@ export async function signup(
   const existingUser = await getUserByEmail(email);
 
   if (existingUser) {
-    return { errors: { server: ['An account with this email already exists.'] } };
+    return {
+      errors: { server: ['An account with this email already exists.'] },
+    };
   }
 
   // In a real app, you would create the user in the database here.
   // For this mock, we'll just log them in as a new user would be created.
   // We'll simulate creating user with id 'u_5'
-  
+
   const newUser = {
     id: `u_${Math.floor(Math.random() * 1000)}`,
     ...validatedFields.data,
     passwordHash: validatedFields.data.password,
     phone: '',
-    avatarUrl: `https://picsum.photos/seed/${Math.random()}/100/100`
-  }
+    avatarUrl: `https://picsum.photos/seed/${Math.random()}/100/100`,
+  };
 
   // In a real app, you'd add this user to your database.
   // For now, we will just proceed to log them in.
 
-  cookies().set('session-userid', newUser.id, {
+  (
+    await // In a real app, you'd add this user to your database.
+    // For now, we will just proceed to log them in.
+    cookies()
+  ).set('session-userid', newUser.id, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     maxAge: 60 * 60 * 24 * 7, // 1 week

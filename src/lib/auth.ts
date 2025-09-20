@@ -4,7 +4,7 @@ import { getUserById } from './data';
 import type { User } from './types';
 
 export async function getSession() {
-  const userId = cookies().get('session-userid')?.value;
+  const userId = (await cookies()).get('session-userid')?.value;
   if (!userId) {
     return null;
   }
@@ -17,11 +17,11 @@ export async function getSession() {
 }
 
 export async function getUserId() {
-  return cookies().get('session-userid')?.value;
+  return (await cookies()).get('session-userid')?.value;
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-    const session = await getSession();
-    if (!session) return null;
-    return session;
+  const session = await getSession();
+  if (!session) return null;
+  return session;
 }

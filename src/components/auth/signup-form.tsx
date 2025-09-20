@@ -3,7 +3,7 @@
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import Link from 'next/link';
-import { signup } from '@/lib/actions';
+import { signup, SignupState } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,7 +29,12 @@ function SignupButton() {
 }
 
 export function SignupForm() {
-  const [state, dispatch] = useActionState(signup, undefined);
+  const initialState: SignupState = {
+    errors: {},
+    message: null,
+  };
+
+  const [state, dispatch] = useActionState(signup, initialState);
 
   return (
     <Card className="w-full max-w-sm">
@@ -45,37 +50,69 @@ export function SignupForm() {
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Sign Up Failed</AlertTitle>
-              <AlertDescription>{state.errors.server.join(', ')}</AlertDescription>
+              <AlertDescription>
+                {state.errors.server.join(', ')}
+              </AlertDescription>
             </Alert>
           )}
           <div className="grid gap-2">
             <Label htmlFor="name">Full Name</Label>
             <Input id="name" name="name" placeholder="John Doe" required />
-            {state?.errors?.name && <p className="text-sm font-medium text-destructive">{state.errors.name}</p>}
+            {state?.errors?.name && (
+              <p className="text-sm font-medium text-destructive">
+                {state.errors.name}
+              </p>
+            )}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" name="email" placeholder="m@example.com" required />
-            {state?.errors?.email && <p className="text-sm font-medium text-destructive">{state.errors.email}</p>}
+            <Input
+              id="email"
+              type="email"
+              name="email"
+              placeholder="m@example.com"
+              required
+            />
+            {state?.errors?.email && (
+              <p className="text-sm font-medium text-destructive">
+                {state.errors.email}
+              </p>
+            )}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="password">Password</Label>
             <Input id="password" type="password" name="password" required />
-            {state?.errors?.password && <p className="text-sm font-medium text-destructive">{state.errors.password}</p>}
+            {state?.errors?.password && (
+              <p className="text-sm font-medium text-destructive">
+                {state.errors.password}
+              </p>
+            )}
           </div>
           <div className="grid gap-2">
             <Label>I want to:</Label>
-            <RadioGroup defaultValue="client" name="role" className="flex gap-4">
+            <RadioGroup
+              defaultValue="client"
+              name="role"
+              className="flex gap-4"
+            >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="client" id="role-client" />
-                <Label htmlFor="role-client" className="font-normal">Rent a vehicle</Label>
+                <Label htmlFor="role-client" className="font-normal">
+                  Rent a vehicle
+                </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="owner" id="role-owner" />
-                <Label htmlFor="role-owner" className="font-normal">List my vehicle</Label>
+                <Label htmlFor="role-owner" className="font-normal">
+                  List my vehicle
+                </Label>
               </div>
             </RadioGroup>
-             {state?.errors?.role && <p className="text-sm font-medium text-destructive">{state.errors.role}</p>}
+            {state?.errors?.role && (
+              <p className="text-sm font-medium text-destructive">
+                {state.errors.role}
+              </p>
+            )}
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">

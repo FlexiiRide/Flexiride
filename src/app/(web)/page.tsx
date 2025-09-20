@@ -37,7 +37,8 @@ export default async function HomePage() {
               Popular Vehicles
             </h2>
             <p className="mt-2 text-muted-foreground max-w-xl mx-auto">
-              Browse our most popular cars and bikes available for rent right now.
+              Browse our most popular cars and bikes available for rent right
+              now.
             </p>
           </div>
           <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">

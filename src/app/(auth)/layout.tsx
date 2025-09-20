@@ -1,4 +1,4 @@
-import { Logo } from "@/components/layout/logo";
+import { Logo } from '@/components/layout/logo';
 
 export default function AuthLayout({
   children,
@@ -7,10 +7,10 @@ export default function AuthLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4">
-        <div className="absolute top-8 left-8">
-            <Logo />
-        </div>
-        {children}
+      <div className="absolute top-8 left-8">
+        <Logo />
+      </div>
+      {children}
     </div>
   );
 }

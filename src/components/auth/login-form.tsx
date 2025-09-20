@@ -3,7 +3,7 @@
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import Link from 'next/link';
-import { login } from '@/lib/actions';
+import { login, LoginState } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,7 +28,11 @@ function LoginButton() {
 }
 
 export function LoginForm() {
-  const [state, dispatch] = useActionState(login, undefined);
+  const initialState: LoginState = {
+    errors: {},
+    message: null,
+  };
+  const [state, dispatch] = useActionState(login, initialState);
 
   return (
     <Card className="w-full max-w-sm">
@@ -44,7 +48,9 @@ export function LoginForm() {
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Login Failed</AlertTitle>
-              <AlertDescription>{state.errors.server.join(', ')}</AlertDescription>
+              <AlertDescription>
+                {state.errors.server.join(', ')}
+              </AlertDescription>
             </Alert>
           )}
           <div className="grid gap-2">
@@ -57,21 +63,37 @@ export function LoginForm() {
               required
               aria-describedby="email-error"
             />
-             {state?.errors?.email &&
-                <p id="email-error" className="text-sm font-medium text-destructive">{state.errors.email}</p>
-             }
+            {state?.errors?.email && (
+              <p
+                id="email-error"
+                className="text-sm font-medium text-destructive"
+              >
+                {state.errors.email}
+              </p>
+            )}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" name="password" required  aria-describedby="password-error" />
-            {state?.errors?.password &&
-                <p id="password-error" className="text-sm font-medium text-destructive">{state.errors.password}</p>
-             }
+            <Input
+              id="password"
+              type="password"
+              name="password"
+              required
+              aria-describedby="password-error"
+            />
+            {state?.errors?.password && (
+              <p
+                id="password-error"
+                className="text-sm font-medium text-destructive"
+              >
+                {state.errors.password}
+              </p>
+            )}
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
           <LoginButton />
-           <div className="text-center text-sm">
+          <div className="text-center text-sm">
             Don&apos;t have an account?{' '}
             <Link href="/signup" className="underline">
               Sign up

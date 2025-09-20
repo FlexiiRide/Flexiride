@@ -14,7 +14,7 @@ import { ComponentProps } from 'react';
 
 type VehicleCardProps = {
   vehicle: Vehicle;
-} & ComponentProps<typeof Card>
+} & ComponentProps<typeof Card>;
 
 export function VehicleCard({ vehicle, ...props }: VehicleCardProps) {
   const VehicleIcon = vehicle.type === 'car' ? Car : Bike;
@@ -23,7 +23,10 @@ export function VehicleCard({ vehicle, ...props }: VehicleCardProps) {
   return (
     <Card className="overflow-hidden flex flex-col h-full" {...props}>
       <CardHeader className="p-0">
-        <Link href={`/listing/${vehicle.id}`} className="block relative aspect-[3/2] w-full">
+        <Link
+          href={`/listing/${vehicle.id}`}
+          className="block relative aspect-[3/2] w-full"
+        >
           <Image
             src={vehicle.images[0]}
             alt={vehicle.title}
@@ -35,14 +38,18 @@ export function VehicleCard({ vehicle, ...props }: VehicleCardProps) {
       </CardHeader>
       <CardContent className="p-4 flex-grow">
         <div className="flex justify-between items-start gap-2">
-            <Badge variant="secondary" className="capitalize mb-2">
-                <VehicleIcon className="h-3 w-3 mr-1.5" />
-                {vehicle.type}
-            </Badge>
-            {vehicle.status === 'inactive' && <Badge variant="destructive">Inactive</Badge>}
+          <Badge variant="secondary" className="capitalize mb-2">
+            <VehicleIcon className="h-3 w-3 mr-1.5" />
+            {vehicle.type}
+          </Badge>
+          {vehicle.status === 'inactive' && (
+            <Badge variant="destructive">Inactive</Badge>
+          )}
         </div>
-        <CardTitle as="h3" className="text-lg font-semibold mb-1">
-          <Link href={`/listing/${vehicle.id}`}>{vehicle.title}</Link>
+        <CardTitle className="text-lg font-semibold mb-1">
+          <h3>
+            <Link href={`/listing/${vehicle.id}`}>{vehicle.title}</Link>
+          </h3>
         </CardTitle>
         <div className="flex items-center text-sm text-muted-foreground">
           <MapPin className="h-4 w-4 mr-1.5 shrink-0" />

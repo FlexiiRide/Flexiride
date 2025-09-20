@@ -1,7 +1,7 @@
 import { getCurrentUser } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { getBookings, getVehicles } from '@/lib/data';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { VehicleCard } from '@/components/vehicles/vehicle-card';
 import { Badge } from '@/components/ui/badge';
@@ -66,9 +66,9 @@ export default async function DashboardPage() {
                             booking.status === 'approved'
                               ? 'default'
                               : booking.status === 'rejected' ||
-                                booking.status === 'cancelled'
-                              ? 'destructive'
-                              : 'secondary'
+                                  booking.status === 'cancelled'
+                                ? 'destructive'
+                                : 'secondary'
                           }
                           className="capitalize"
                         >

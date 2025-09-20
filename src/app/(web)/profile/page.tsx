@@ -37,15 +37,20 @@ export default async function ProfilePage() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email">Email Address</Label>
-              <Input id="email" type="email" defaultValue={user.email} readOnly />
+              <Input
+                id="email"
+                type="email"
+                defaultValue={user.email}
+                readOnly
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="phone">Phone Number</Label>
               <Input id="phone" defaultValue={user.phone} />
             </div>
             <div className="flex justify-end gap-2 mt-4">
-                 <Button variant="outline">Discard</Button>
-                 <Button>Save Changes</Button>
+              <Button variant="outline">Discard</Button>
+              <Button>Save Changes</Button>
             </div>
           </form>
         </CardContent>

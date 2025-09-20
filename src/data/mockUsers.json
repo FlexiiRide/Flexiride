@@ -1,0 +1,38 @@
+[
+  {
+    "id": "u_1",
+    "name": "Alice Owner",
+    "email": "owner@example.com",
+    "phone": "+94123456789",
+    "role": "owner",
+    "avatarUrl": "https://picsum.photos/seed/u1/100/100",
+    "passwordHash": "password123"
+  },
+  {
+    "id": "u_2",
+    "name": "Bob Client",
+    "email": "client@example.com",
+    "phone": "+94987654321",
+    "role": "client",
+    "avatarUrl": "https://picsum.photos/seed/u2/100/100",
+    "passwordHash": "password123"
+  },
+  {
+    "id": "u_3",
+    "name": "Charlie Owner",
+    "email": "charlie@example.com",
+    "phone": "+94112233445",
+    "role": "owner",
+    "avatarUrl": "https://picsum.photos/seed/u3/100/100",
+    "passwordHash": "password123"
+  },
+  {
+    "id": "u_4",
+    "name": "Diana Client",
+    "email": "diana@example.com",
+    "phone": "+94556677889",
+    "role": "client",
+    "avatarUrl": "https://picsum.photos/seed/u4/100/100",
+    "passwordHash": "password123"
+  }
+]

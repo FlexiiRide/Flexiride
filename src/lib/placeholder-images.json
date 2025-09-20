@@ -1,0 +1,10 @@
+{
+  "placeholderImages": [
+    {
+      "id": "hero-1",
+      "description": "A scenic road with a car driving on it, representing freedom and travel.",
+      "imageUrl": "https://images.unsplash.com/photo-1517524206127-48bbd363f357?q=80&w=2070&auto=format&fit=crop",
+      "imageHint": "scenic road"
+    }
+  ]
+}

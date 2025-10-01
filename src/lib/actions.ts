@@ -38,23 +38,37 @@ export async function login(
   const { email, password } = validatedFields.data;
 
   try {
-    const user = await getUserByEmail(email);
+    // Call NestJS backend
+    const res = await fetch(`${process.env.API_BASE_URL}auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+      credentials: 'include', // if backend sets cookies
+    });
 
-    if (!user) {
-      return { errors: { server: ['Invalid credentials'] } };
+    if (!res.ok) {
+      const errorData = await res.json();
+      return { errors: { server: [errorData.message || 'Invalid credentials'] } };
     }
 
-    // This is mock auth, so we just check against the stored hash
-    if (user.passwordHash !== password) {
-      return { errors: { server: ['Invalid credentials'] } };
-    }
+    // Handle JWT
+    const { token, user } = await res.json();
 
-    (await cookies()).set('session-userid', user.id, {
+    (await cookies()).set('session-user', JSON.stringify(user), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 60 * 24 * 7, // 1 week
       path: '/',
     });
+
+    (await cookies()).set('session-user-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+      path: '/',
+    });
+
+
   } catch (error) {
     return { errors: { server: ['Something went wrong.'] } };
   }
@@ -63,7 +77,7 @@ export async function login(
 }
 
 export async function logout() {
-  (await cookies()).delete('session-userid');
+  (await cookies()).delete('session-user');
   redirect('/login');
 }
 
@@ -100,35 +114,33 @@ export async function signup(
     };
   }
 
-  const { email } = validatedFields.data;
-  const existingUser = await getUserByEmail(email);
+  const { name, email, password } = validatedFields.data;
 
-  if (existingUser) {
-    return {
-      errors: { server: ['An account with this email already exists.'] },
-    };
+  // Call NestJS backend
+  const res = await fetch(`${process.env.API_BASE_URL}auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, password }),
+    credentials: 'include', // if backend sets cookies
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    return { errors: { server: [errorData.message || 'Invalid credentials'] } };
   }
 
-  // In a real app, you would create the user in the database here.
-  // For this mock, we'll just log them in as a new user would be created.
-  // We'll simulate creating user with id 'u_5'
 
-  const newUser = {
-    id: `u_${Math.floor(Math.random() * 1000)}`,
-    ...validatedFields.data,
-    passwordHash: validatedFields.data.password,
-    phone: '',
-    avatarUrl: `https://picsum.photos/seed/${Math.random()}/100/100`,
-  };
+  // Handle JWT
+  const { token, user } = await res.json();
 
-  // In a real app, you'd add this user to your database.
-  // For now, we will just proceed to log them in.
+  (await cookies()).set('session-user', JSON.stringify(user), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 60 * 60 * 24 * 7, // 1 week
+    path: '/',
+  });
 
-  (
-    await // In a real app, you'd add this user to your database.
-    // For now, we will just proceed to log them in.
-    cookies()
-  ).set('session-userid', newUser.id, {
+  (await cookies()).set('session-user-token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     maxAge: 60 * 60 * 24 * 7, // 1 week

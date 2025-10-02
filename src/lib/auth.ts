@@ -1,17 +1,17 @@
 import 'server-only';
 import { cookies } from 'next/headers';
-import { getUserById } from './data';
 import type { User } from './types';
 
 export async function getSession() {
-  const userId = (await cookies()).get('session-userid')?.value;
-  if (!userId) {
+  const userCookie = (await cookies()).get('session-user')?.value;
+  if (!userCookie) {
     return null;
   }
   try {
-    const user = await getUserById(userId);
+    const user = JSON.parse(userCookie);
     return user || null;
-  } catch (error) {
+  }
+  catch (error) {
     return null;
   }
 }
@@ -23,5 +23,5 @@ export async function getUserId() {
 export async function getCurrentUser(): Promise<User | null> {
   const session = await getSession();
   if (!session) return null;
-  return session;
+  return session as User;
 }

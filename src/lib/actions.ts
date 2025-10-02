@@ -3,7 +3,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import { getUserByEmail } from './data';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -48,7 +47,9 @@ export async function login(
 
     if (!res.ok) {
       const errorData = await res.json();
-      return { errors: { server: [errorData.message || 'Invalid credentials'] } };
+      return {
+        errors: { server: [errorData.message || 'Invalid credentials'] },
+      };
     }
 
     // Handle JWT
@@ -67,8 +68,6 @@ export async function login(
       maxAge: 60 * 60 * 24 * 7, // 1 week
       path: '/',
     });
-
-
   } catch (error) {
     return { errors: { server: ['Something went wrong.'] } };
   }
@@ -128,7 +127,6 @@ export async function signup(
     const errorData = await res.json();
     return { errors: { server: [errorData.message || 'Invalid credentials'] } };
   }
-
 
   // Handle JWT
   const { token, user } = await res.json();

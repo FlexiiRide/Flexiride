@@ -43,7 +43,7 @@ const mockUsers: User[] = [
 const mockVehicles: Vehicle[] = [
   {
     id: 'v_100',
-    ownerId: 'u_1',
+    ownerId: '68e2b43993c6d8346ac23ffb',
     title: 'Toyota Prius 2019',
     type: 'car',
     pricePerHour: 6.5,
@@ -70,7 +70,7 @@ const mockVehicles: Vehicle[] = [
   },
   {
     id: 'v_101',
-    ownerId: 'u_3',
+    ownerId: '68e2b43993c6d8346ac23ffb',
     title: 'Honda Activa 2020',
     type: 'bike',
     pricePerHour: 2.5,
@@ -96,7 +96,7 @@ const mockVehicles: Vehicle[] = [
   },
   {
     id: 'v_102',
-    ownerId: 'u_1',
+    ownerId: '68e2b43993c6d8346ac23ffb',
     title: 'Nissan Sunny 2017',
     type: 'car',
     pricePerHour: 5,

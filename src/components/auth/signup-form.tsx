@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import Link from 'next/link';
@@ -35,6 +36,7 @@ export function SignupForm() {
   };
 
   const [state, dispatch] = useActionState(signup, initialState);
+  const [role, setRole] = useState('client');
 
   return (
     <Card className="w-full max-w-sm">
@@ -91,8 +93,8 @@ export function SignupForm() {
           <div className="grid gap-2">
             <Label>I want to:</Label>
             <RadioGroup
-              defaultValue="client"
-              name="role"
+              value={role}
+              onValueChange={setRole}
               className="flex gap-4"
             >
               <div className="flex items-center space-x-2">
@@ -108,6 +110,9 @@ export function SignupForm() {
                 </Label>
               </div>
             </RadioGroup>
+
+            <input type="hidden" name="role" value={role} />
+
             {state?.errors?.role && (
               <p className="text-sm font-medium text-destructive">
                 {state.errors.role}

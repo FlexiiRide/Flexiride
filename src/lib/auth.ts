@@ -1,4 +1,4 @@
-import 'server-only';
+'use server';
 import { cookies } from 'next/headers';
 import type { User } from './types';
 
@@ -10,8 +10,7 @@ export async function getSession() {
   try {
     const user = JSON.parse(userCookie);
     return user || null;
-  }
-  catch (error) {
+  } catch (error) {
     return null;
   }
 }

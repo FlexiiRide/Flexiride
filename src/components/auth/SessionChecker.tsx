@@ -11,7 +11,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { checkTokenExpiration, logout } from '@/lib/actions/auth-check';
+import {
+  checkTokenExpiration,
+  logout,
+  extendSession,
+} from '@/lib/actions/auth-check';
 import { useRouter } from 'next/navigation';
 
 /**
@@ -27,18 +31,22 @@ export function SessionChecker() {
   const [showWarningDialog, setShowWarningDialog] = useState(false);
   const [showExpiredDialog, setShowExpiredDialog] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
+  const [isExtending, setIsExtending] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    let warningTimeout: NodeJS.Timeout | undefined;
-
-    // Check token expiration
     const checkSession = async () => {
-      const { isExpired, expiresAt } = await checkTokenExpiration();
+      const { isExpired, expiresAt, isValid } = await checkTokenExpiration();
+
+      // If no token exists AND we're not already showing a dialog, logout
+      if (!isValid && !isExpired) {
+        setShowExpiredDialog(true); // Show expired dialog
+        return;
+      }
 
       if (isExpired) {
-        // Token already expired
         setShowExpiredDialog(true);
+        setShowWarningDialog(false);
         return;
       }
 
@@ -47,31 +55,41 @@ export function SessionChecker() {
         const timeLeft = expiresAt.getTime() - now.getTime();
         const minutesLeft = Math.floor(timeLeft / 1000 / 60);
 
-        // Show warning 5 minutes before expiration
         if (minutesLeft <= 5 && minutesLeft > 0) {
           setTimeRemaining(minutesLeft);
           setShowWarningDialog(true);
+        } else if (minutesLeft > 5) {
+          setShowWarningDialog(false);
         }
       }
     };
 
-    // Check immediately when component mounts
     checkSession();
-
-    // Then check every 30 seconds
     const interval = setInterval(checkSession, 30000);
 
-    // Cleanup interval on unmount
-    return () => {
-      clearInterval(interval);
-      if (warningTimeout) clearTimeout(warningTimeout);
-    };
+    return () => clearInterval(interval);
   }, []);
 
-  const handleExtendSession = () => {
-    // Refresh the page to get new data and reset session
-    setShowWarningDialog(false);
-    router.refresh();
+  const handleExtendSession = async () => {
+    setIsExtending(true);
+
+    try {
+      const result = await extendSession();
+
+      if (result.success) {
+        setShowWarningDialog(false);
+        router.refresh();
+      } else {
+        setShowWarningDialog(false);
+        setShowExpiredDialog(true);
+      }
+    } catch (error) {
+      console.error('Error extending session:', error);
+      setShowWarningDialog(false);
+      setShowExpiredDialog(true);
+    } finally {
+      setIsExtending(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -92,11 +110,14 @@ export function SessionChecker() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleLogout}>
+            <AlertDialogCancel onClick={handleLogout} disabled={isExtending}>
               Log Out
             </AlertDialogCancel>
-            <AlertDialogAction onClick={handleExtendSession}>
-              Stay Logged In
+            <AlertDialogAction
+              onClick={handleExtendSession}
+              disabled={isExtending}
+            >
+              {isExtending ? 'Extending...' : 'Stay Logged In'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

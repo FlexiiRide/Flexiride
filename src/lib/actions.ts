@@ -66,7 +66,7 @@ export async function login(
     cookieStore.set('access-token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 15, // 15 min default
+      maxAge: 60 * 16,
       path: '/',
     });
 
@@ -155,7 +155,7 @@ export async function signup(
     cookieStore.set('access-token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 15, // 15 min
+      maxAge: 60 * 16,
       path: '/',
     });
 

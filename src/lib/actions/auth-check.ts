@@ -39,7 +39,8 @@ export async function checkTokenExpiration(): Promise<{
     }
 
     const expiresAt = new Date(payload.exp * 1000);
-    const isExpired = expiresAt < new Date();
+    const now = new Date();
+    const isExpired = expiresAt < now;
 
     return {
       isValid: !isExpired,
@@ -90,25 +91,37 @@ export async function extendSession(): Promise<{
     });
 
     if (!response.ok) {
-      console.error('Failed to refresh tokens', await response.text());
+      const errorText = await response.text();
+      console.error('Failed to refresh tokens:', errorText);
       return { success: false, error: 'Failed to refresh token' };
     }
 
     const data = await response.json();
 
-    // Expected: { accessToken, refreshToken }
+    // Update cookies with new tokens
     if (data.accessToken) {
       cookieStore.set('access-token', data.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/',
-        maxAge: 60 * 15, // 15 min
+        maxAge: 60 * 16,
       });
     }
 
     if (data.refreshToken) {
       cookieStore.set('refresh-token', data.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+      });
+    }
+
+    // Also update session user if needed
+    if (data.user) {
+      cookieStore.set('session-user', JSON.stringify(data.user), {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',

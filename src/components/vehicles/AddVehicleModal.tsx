@@ -52,15 +52,18 @@ interface AddVehicleModalProps {
   isOpen: boolean;
   onClose: () => void;
   // eslint-disable-next-line no-unused-vars
-  onSubmit: (data: VehicleFormData) => void;
+  onSubmit: (data: VehicleFormData) => Promise<void>;
+  isSubmitting?: boolean;
 }
 
 export function AddVehicleModal({
   isOpen,
   onClose,
   onSubmit,
+  isSubmitting = false,
 }: AddVehicleModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<VehicleFormData>({
     title: '',
     type: 'car',
@@ -165,12 +168,24 @@ export function AddVehicleModal({
     }
   };
 
-  const handleSubmit = () => {
-    if (validateStep(currentStep)) {
-      onSubmit(formData);
-      onClose();
+  const handleSubmit = async () => {
+    if (!validateStep(currentStep)) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await onSubmit(formData);
+    } catch (error) {
+      console.error('Submit error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  // eslint-disable-next-line no-unused-vars
+  const isProcessing = isLoading || isSubmitting;
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -238,10 +253,12 @@ export function AddVehicleModal({
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-semibold mb-3">
-                Price Per Hour ($) <span className="text-destructive">*</span>
+                Price Per Hour (LKR) <span className="text-destructive">*</span>
               </label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <p className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground">
+                  LKR
+                </p>
                 <input
                   type="number"
                   step="0.1"
@@ -249,7 +266,7 @@ export function AddVehicleModal({
                   value={formData.pricePerHour}
                   onChange={(e) => updateField('pricePerHour', e.target.value)}
                   placeholder="6.5"
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-input bg-background focus:border-primary outline-none transition-colors"
+                  className="ml-4 w-full pl-10 pr-4 py-3 rounded-lg border-2 border-input bg-background focus:border-primary outline-none transition-colors"
                 />
               </div>
               {(!formData.pricePerHour ||
@@ -262,10 +279,12 @@ export function AddVehicleModal({
 
             <div>
               <label className="block text-sm font-semibold mb-3">
-                Price Per Day ($) <span className="text-destructive">*</span>
+                Price Per Day (LKR) <span className="text-destructive">*</span>
               </label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <p className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground">
+                  LKR
+                </p>{' '}
                 <input
                   type="number"
                   step="0.1"
@@ -273,7 +292,7 @@ export function AddVehicleModal({
                   value={formData.pricePerDay}
                   onChange={(e) => updateField('pricePerDay', e.target.value)}
                   placeholder="45"
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-input bg-background focus:border-primary outline-none transition-colors"
+                  className="ml-4 w-full pl-10 pr-4 py-3 rounded-lg border-2 border-input bg-background focus:border-primary outline-none transition-colors"
                 />
               </div>
               {(!formData.pricePerDay ||
@@ -290,7 +309,8 @@ export function AddVehicleModal({
               parseFloat(formData.pricePerDay) > 0 && (
                 <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
                   <p className="text-sm">
-                    <span className="font-semibold">Daily rate savings:</span> $
+                    <span className="font-semibold">Daily rate savings:</span>{' '}
+                    LKR
                     {(
                       parseFloat(formData.pricePerHour) * 24 -
                       parseFloat(formData.pricePerDay)
@@ -567,7 +587,7 @@ export function AddVehicleModal({
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Pricing:</span>
                   <span className="font-semibold">
-                    ${formData.pricePerHour || '0'}/hr · $
+                    ${formData.pricePerHour || '0'}/hr · LKR
                     {formData.pricePerDay || '0'}/day
                   </span>
                 </div>

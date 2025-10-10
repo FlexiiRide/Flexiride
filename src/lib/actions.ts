@@ -37,12 +37,10 @@ export async function login(
   const { email, password } = validatedFields.data;
 
   try {
-    // Call NestJS backend
     const res = await fetch(`${process.env.API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
-      credentials: 'include', // if backend sets cookies
     });
 
     if (!res.ok) {
@@ -52,20 +50,31 @@ export async function login(
       };
     }
 
-    // Handle JWT
-    const { token, user } = await res.json();
+    const { accessToken, refreshToken, user } = await res.json();
 
-    (await cookies()).set('session-user', JSON.stringify(user), {
+    const cookieStore = await cookies();
+
+    // Save user info
+    cookieStore.set('session-user', JSON.stringify(user), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 24 * 7, // 1 week
+      maxAge: 60 * 60 * 24 * 7,
       path: '/',
     });
 
-    (await cookies()).set('session-user-token', token, {
+    // Save access token (short-lived)
+    cookieStore.set('access-token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 24 * 7, // 1 week
+      maxAge: 60 * 15, // 15 min default
+      path: '/',
+    });
+
+    // Save refresh token (longer-lived)
+    cookieStore.set('refresh-token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     });
   } catch (error) {
@@ -76,7 +85,10 @@ export async function login(
 }
 
 export async function logout() {
-  (await cookies()).delete('session-user');
+  const cookieStore = await cookies();
+  cookieStore.delete('session-user');
+  cookieStore.delete('access-token');
+  cookieStore.delete('refresh-token');
   redirect('/login');
 }
 
@@ -115,35 +127,47 @@ export async function signup(
 
   const { name, email, password, role } = validatedFields.data;
 
-  // Call NestJS backend
-  const res = await fetch(`${process.env.API_BASE_URL}/auth/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, email, password, role }),
-    credentials: 'include', // if backend sets cookies
-  });
+  try {
+    const res = await fetch(`${process.env.API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password, role }),
+    });
 
-  if (!res.ok) {
-    const errorData = await res.json();
-    return { errors: { server: [errorData.message || 'Invalid credentials'] } };
+    if (!res.ok) {
+      const errorData = await res.json();
+      return {
+        errors: { server: [errorData.message || 'Invalid credentials'] },
+      };
+    }
+
+    const { accessToken, refreshToken, user } = await res.json();
+
+    const cookieStore = await cookies();
+
+    cookieStore.set('session-user', JSON.stringify(user), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
+    });
+
+    cookieStore.set('access-token', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 15, // 15 min
+      path: '/',
+    });
+
+    cookieStore.set('refresh-token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
+    });
+
+    redirect('/dashboard');
+  } catch (error) {
+    return { errors: { server: ['Something went wrong.'] } };
   }
-
-  // Handle JWT
-  const { token, user } = await res.json();
-
-  (await cookies()).set('session-user', JSON.stringify(user), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 60 * 60 * 24 * 7, // 1 week
-    path: '/',
-  });
-
-  (await cookies()).set('session-user-token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 60 * 60 * 24 * 7, // 1 week
-    path: '/',
-  });
-
-  redirect('/dashboard');
 }

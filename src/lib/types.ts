@@ -22,11 +22,13 @@ export type Vehicle = {
     lng: number;
   };
   availableRanges: {
-    from: string; // ISO string
-    to: string; // ISO string
+    from: string;
+    to: string;
   }[];
   description: string;
   status: 'active' | 'inactive';
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 export type Booking = {

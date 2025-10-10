@@ -17,6 +17,10 @@ import { format } from 'date-fns';
 import { Plus } from 'lucide-react';
 import { AddVehicleModal } from '@/components/vehicles/AddVehicleModal';
 import { Booking, User, Vehicle } from '@/lib/types';
+import { createVehicle } from '@/lib/actions/vehicles';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
+import { SessionChecker } from '@/components/auth/SessionChecker';
 
 interface DashboardClientProps {
   user: User;
@@ -32,45 +36,74 @@ export function DashboardClient({
   isOwner,
 }: DashboardClientProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
 
   const handleVehicleSubmit = async (formData: {
-    title: any;
-    type: any;
+    title: string;
+    type: 'car' | 'bike';
     pricePerHour: string;
     pricePerDay: string;
-    images: any;
-    location: { address: any; lat: string; lng: string };
-    availableRanges: any[];
-    description: any;
+    images: File[];
+    location: { address: string; lat: string; lng: string };
+    availableRanges: { from: string; to: string }[];
+    description: string;
   }) => {
-    // Convert form data to match Vehicle type
-    const vehicleData = {
-      title: formData.title,
-      type: formData.type,
-      pricePerHour: parseFloat(formData.pricePerHour),
-      pricePerDay: parseFloat(formData.pricePerDay),
-      images: formData.images,
-      location: {
-        address: formData.location.address,
-        lat: parseFloat(formData.location.lat),
-        lng: parseFloat(formData.location.lng),
-      },
-      availableRanges: formData.availableRanges.map((range) => ({
-        from: new Date(range.from).toISOString(),
-        to: new Date(range.to).toISOString(),
-      })),
-      description: formData.description,
-      status: 'active' as const,
-    };
+    setIsSubmitting(true);
 
-    // eslint-disable-next-line no-console
-    console.log('Submitting vehicle:', vehicleData);
-    // TODO: Call your API to create the vehicle
-    // await createVehicle(vehicleData);
+    try {
+      // Convert form data to match the server action input
+      const vehicleData = {
+        title: formData.title,
+        type: formData.type,
+        pricePerHour: parseFloat(formData.pricePerHour),
+        pricePerDay: parseFloat(formData.pricePerDay),
+        images: formData.images,
+        location: {
+          address: formData.location.address,
+          lat: parseFloat(formData.location.lat),
+          lng: parseFloat(formData.location.lng),
+        },
+        availableRanges: formData.availableRanges.map((range) => ({
+          from: new Date(range.from).toISOString(),
+          to: new Date(range.to).toISOString(),
+        })),
+        description: formData.description,
+      };
+
+      const result = await createVehicle(vehicleData);
+
+      if (result.success) {
+        toast({
+          title: 'Success',
+          description: 'Vehicle created successfully!',
+        });
+        setIsModalOpen(false);
+        router.refresh(); // Refresh the page data
+      } else {
+        toast({
+          title: 'Error',
+          description: result.error || 'Failed to create vehicle',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error submitting vehicle:', error);
+      toast({
+        title: 'Error',
+        description: JSON.stringify(error) || 'An unexpected error occurred',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="container py-12">
+      <SessionChecker />
+
       <div className="flex items-center gap-4 mb-8">
         <Avatar className="h-20 w-20">
           <AvatarImage src={user.avatarUrl} alt={user.name} />
@@ -191,12 +224,11 @@ export function DashboardClient({
                 )
               )}
 
-              {/* Add Vehicle Card with proper styling */}
+              {/* Add Vehicle Card */}
               <button
                 onClick={() => setIsModalOpen(true)}
                 className="group relative overflow-hidden rounded-lg border-2 border-dashed border-muted-foreground/25 hover:border-primary transition-all duration-300 bg-card hover:bg-accent/5"
               >
-                {/* Match VehicleCard structure - assuming it has image at top and content below */}
                 <div className="aspect-[4/3] flex items-center justify-center bg-muted/30">
                   <div className="flex flex-col items-center gap-3">
                     <div className="w-16 h-16 rounded-full bg-background border-2 border-muted-foreground/25 group-hover:border-primary flex items-center justify-center transition-colors">
@@ -222,6 +254,7 @@ export function DashboardClient({
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleVehicleSubmit}
+        isSubmitting={isSubmitting}
       />
     </div>
   );

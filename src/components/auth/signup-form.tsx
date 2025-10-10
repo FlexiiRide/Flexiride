@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import Link from 'next/link';
-import { signup, SignupState } from '@/lib/actions';
+import { signup, SignupState } from '@/lib/actions/auth-action';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

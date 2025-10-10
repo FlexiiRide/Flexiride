@@ -17,7 +17,7 @@ import { format } from 'date-fns';
 import { Plus } from 'lucide-react';
 import { AddVehicleModal } from '@/components/vehicles/AddVehicleModal';
 import { Booking, User, Vehicle } from '@/lib/types';
-import { createVehicle } from '@/lib/actions/vehicles';
+import { createVehicle } from '@/lib/actions/vehicles-action';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { SessionChecker } from '@/components/auth/SessionChecker';

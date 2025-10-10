@@ -1,27 +1,28 @@
-import 'server-only';
+'use server';
 import { cookies } from 'next/headers';
-import { getUserById } from './data';
 import type { User } from './types';
 
 export async function getSession() {
-  const userId = (await cookies()).get('session-userid')?.value;
-  if (!userId) {
-    return null;
-  }
+  const userCookie = (await cookies()).get('session-user')?.value;
+  if (!userCookie) return null;
   try {
-    const user = await getUserById(userId);
+    const user = JSON.parse(userCookie);
     return user || null;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
 
-export async function getUserId() {
-  return (await cookies()).get('session-userid')?.value;
+export async function getAccessToken() {
+  return (await cookies()).get('access-token')?.value || null;
+}
+
+export async function getRefreshToken() {
+  return (await cookies()).get('refresh-token')?.value || null;
 }
 
 export async function getCurrentUser(): Promise<User | null> {
   const session = await getSession();
   if (!session) return null;
-  return session;
+  return session as User;
 }

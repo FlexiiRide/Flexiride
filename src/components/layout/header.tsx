@@ -9,7 +9,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { getCurrentUser } from '@/lib/auth';
-import { logout } from '@/lib/actions';
+import { logout } from '@/lib/actions/auth-action';
 
 import { Logo } from './logo';
 import { ThemeToggle } from './theme-toggle';

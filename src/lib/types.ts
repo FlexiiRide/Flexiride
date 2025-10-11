@@ -4,7 +4,7 @@ export type User = {
   email: string;
   phone: string;
   role: 'owner' | 'client';
-  avatarUrl: string;
+  avatarUrl?: string;
   passwordHash: string; // For mock auth
 };
 
@@ -15,7 +15,7 @@ export type Vehicle = {
   type: 'car' | 'bike';
   pricePerHour: number;
   pricePerDay: number;
-  images: string[];
+  images?: string[];
   location: {
     address: string;
     lat: number;

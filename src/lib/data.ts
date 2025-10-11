@@ -96,9 +96,14 @@ const mockBookings: Booking[] = [
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 // User Functions
-export async function getUsers(): Promise<User[]> {
+export async function getUsers(filter?: { role?: string }): Promise<User[]> {
   await delay(100);
-  return mockUsers as User[];
+
+  if (filter?.role) {
+    return mockUsers.filter((user) => user.role === filter.role);
+  }
+
+  return mockUsers;
 }
 
 export async function getUserById(id: string): Promise<User | undefined> {
@@ -124,15 +129,15 @@ export async function getVehicles(filters?: {
   let vehicles = (await getMyVehicles())?.data as unknown as Vehicle[];
 
   if (filters?.type) {
-    vehicles = vehicles.filter((v) => v.type === filters.type);
+    vehicles = vehicles?.filter((v) => v.type === filters.type);
   }
 
   if (filters?.ownerId) {
-    vehicles = vehicles.filter((v) => v.ownerId === filters.ownerId);
+    vehicles = vehicles?.filter((v) => v.ownerId === filters.ownerId);
   }
 
   if (filters?.limit) {
-    return vehicles.slice(0, filters.limit);
+    return vehicles?.slice(0, filters.limit);
   }
 
   return vehicles;

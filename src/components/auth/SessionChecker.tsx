@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,15 +34,14 @@ export function SessionChecker() {
   const [isExtending, setIsExtending] = useState(false);
   const router = useRouter();
 
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     const checkSession = async () => {
-      const { isExpired, expiresAt, isValid } = await checkTokenExpiration();
+      const { isExpired, expiresAt, hasToken } =
+        await checkTokenExpiration();
 
-      // If no token exists AND we're not already showing a dialog, logout
-      if (!isValid && !isExpired) {
-        setShowExpiredDialog(true); // Show expired dialog
-        return;
-      }
+      if (!hasToken) return;
 
       if (isExpired) {
         setShowExpiredDialog(true);
@@ -65,11 +64,13 @@ export function SessionChecker() {
     };
 
     checkSession();
-    const interval = setInterval(checkSession, 30000);
+    intervalRef.current = setInterval(checkSession, 30000);
 
-    return () => clearInterval(interval);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   }, []);
-
+  
   const handleExtendSession = async () => {
     setIsExtending(true);
 

@@ -106,7 +106,7 @@ export function DashboardClient({
 
       <div className="flex items-center gap-4 mb-8">
         <Avatar className="h-20 w-20">
-          <AvatarImage src={user.avatarUrl} alt={user.name} />
+          <AvatarImage src={user?.avatarUrl} alt={user.name} />
           <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
         </Avatar>
         <div>
@@ -184,7 +184,7 @@ export function DashboardClient({
                             {booking.status}
                           </Badge>
                           <p className="font-semibold mt-1">
-                            ${booking.totalPrice.toFixed(2)}
+                            LKR {booking.totalPrice.toFixed(2)}
                           </p>
                         </div>
                       </div>
@@ -206,7 +206,7 @@ export function DashboardClient({
               Your Vehicles
             </h2>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {myVehicles.map(
+              {myVehicles?.map(
                 (vehicle: {
                   id: any;
                   ownerId: string;
@@ -214,7 +214,7 @@ export function DashboardClient({
                   type: 'car' | 'bike';
                   pricePerHour: number;
                   pricePerDay: number;
-                  images: string[];
+                  images?: string[];
                   location: { address: string; lat: number; lng: number };
                   availableRanges: { from: string; to: string }[];
                   description: string;

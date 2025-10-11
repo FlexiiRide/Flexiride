@@ -28,7 +28,7 @@ export function VehicleCard({ vehicle, ...props }: VehicleCardProps) {
           className="block relative aspect-[3/2] w-full"
         >
           <Image
-            src={vehicle.images[0]}
+            src={vehicle.images?.[0] || '/images/placeholder.jpg'}
             alt={vehicle.title}
             fill
             className="object-cover transition-transform duration-300 hover:scale-105"
@@ -61,7 +61,7 @@ export function VehicleCard({ vehicle, ...props }: VehicleCardProps) {
           <p className="text-sm text-muted-foreground">Starting from</p>
           <p>
             <span className="text-xl font-bold text-foreground">
-              ${vehicle.pricePerHour.toFixed(2)}
+              LKR {vehicle.pricePerHour.toFixed(2)}
             </span>
             <span className="text-sm text-muted-foreground">/hour</span>
           </p>

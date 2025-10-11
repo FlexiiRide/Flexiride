@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import {
   Bell,
@@ -6,7 +8,7 @@ import {
   LayoutDashboard,
   User as UserIcon,
   LogOut,
-  Settings,
+  // Settings,
 } from 'lucide-react';
 import { getCurrentUser } from '@/lib/auth';
 import { logout } from '@/lib/actions/auth-action';
@@ -23,9 +25,37 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useRouter } from 'next/navigation';
+import { toast } from '@/hooks/use-toast';
+import { useEffect, useState } from 'react';
 
-export async function Header() {
-  const user = await getCurrentUser();
+export function Header() {
+  const [user, setUser] = useState<null | Awaited<ReturnType<typeof getCurrentUser>>>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    getCurrentUser().then(setUser);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await logout(); // server action to delete cookies
+      toast({
+        title: '✅ Logged Out',
+        description: 'You have been successfully logged out.',
+      });
+
+      setTimeout(() => {
+        router.push('/login'); // redirect after toast
+      }, 1000);
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: '❌ Logout Failed',
+        description: 'Something went wrong. Please try again.',
+      });
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -72,20 +102,17 @@ export async function Header() {
                       <UserIcon className="mr-2 h-4 w-4" /> Profile
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
+                  {/* <DropdownMenuItem asChild>
                     <Link href="/settings">
                       <Settings className="mr-2 h-4 w-4" /> Settings
                     </Link>
-                  </DropdownMenuItem>
+                  </DropdownMenuItem> */}
                   <DropdownMenuSeparator />
-                  <form action={logout}>
-                    <DropdownMenuItem asChild>
-                      <button type="submit" className="w-full">
-                        <LogOut className="mr-2 h-4 w-4" />
-                        Log out
-                      </button>
-                    </DropdownMenuItem>
-                  </form>
+                  <DropdownMenuItem asChild>
+                    <button onClick={handleLogout} className="w-full flex items-center gap-2">
+                      <LogOut className="h-4 w-4" /> Log out
+                    </button>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (

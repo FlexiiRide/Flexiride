@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon, MapPin } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
@@ -16,18 +15,32 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 
-export function SearchForm() {
-  const router = useRouter();
+interface SearchFormProps {
+  // eslint-disable-next-line no-unused-vars
+  onSearch: (params: { location?: string; from?: string; to?: string }) => void;
+  isLoading?: boolean;
+}
+
+export function SearchForm({ onSearch, isLoading = false }: SearchFormProps) {
   const [location, setLocation] = useState('');
   const [date, setDate] = useState<DateRange | undefined>();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    const params = new URLSearchParams();
-    if (location) params.set('location', location);
-    if (date?.from) params.set('from', format(date.from, 'yyyy-MM-dd'));
-    if (date?.to) params.set('to', format(date.to, 'yyyy-MM-dd'));
-    router.push(`/listings?${params.toString()}`);
+    const params: { location?: string; from?: string; to?: string } = {};
+
+    if (location) params.location = location;
+    if (date?.from) params.from = format(date.from, 'yyyy-MM-dd');
+    if (date?.to) params.to = format(date.to, 'yyyy-MM-dd');
+
+    onSearch(params);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSearch(e as any);
+    }
   };
 
   return (
@@ -42,7 +55,9 @@ export function SearchForm() {
           placeholder="Enter a location"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
+          onKeyDown={handleKeyDown}
           className="pl-10 h-12 text-base"
+          disabled={isLoading}
         />
       </div>
 
@@ -56,6 +71,7 @@ export function SearchForm() {
                 'w-full h-12 justify-start text-left font-normal text-base',
                 !date && 'text-muted-foreground'
               )}
+              disabled={isLoading}
             >
               <CalendarIcon className="mr-2 h-5 w-5" />
               {date?.from ? (
@@ -80,13 +96,18 @@ export function SearchForm() {
               selected={date}
               onSelect={setDate}
               numberOfMonths={2}
+              disabled={{ before: new Date() }}
             />
           </PopoverContent>
         </Popover>
       </div>
 
-      <Button type="submit" className="h-12 text-base sm:col-span-2">
-        Search
+      <Button
+        type="submit"
+        className="h-12 text-base sm:col-span-2"
+        disabled={isLoading}
+      >
+        {isLoading ? 'Searching...' : 'Search'}
       </Button>
     </form>
   );

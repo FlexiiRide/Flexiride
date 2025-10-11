@@ -1,11 +1,50 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { getVehicles } from '@/lib/data';
+import { getAllPopularVehicles, searchVehicles } from '@/lib/data';
 import { SearchForm } from '@/components/vehicles/search-form';
 import { VehicleCard } from '@/components/vehicles/vehicle-card';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { type Vehicle } from '@/lib/types';
 
-export default async function HomePage() {
-  const popularVehicles = await getVehicles({ limit: 6 });
+export default function HomePage() {
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Load popular vehicles on mount
+  useEffect(() => {
+    async function loadPopularVehicles() {
+      setIsLoading(true);
+      try {
+        const popularVehicles = await getAllPopularVehicles({ limit: 10 });
+        setVehicles(popularVehicles || []);
+      } catch (error) {
+        console.error('Error loading vehicles:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadPopularVehicles();
+  }, []);
+
+  const handleSearch = async (params: {
+    location?: string;
+    from?: string;
+    to?: string;
+  }) => {
+    setIsLoading(true);
+    setIsSearching(true);
+    try {
+      const searchResults = await searchVehicles(params);
+      setVehicles(searchResults || []);
+    } catch (error) {
+      console.error('Error searching vehicles:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div>
@@ -26,7 +65,7 @@ export default async function HomePage() {
           <p className="mt-4 max-w-2xl text-lg text-neutral-200 drop-shadow">
             Rent cars and bikes from a community of local owners.
           </p>
-          <SearchForm />
+          <SearchForm onSearch={handleSearch} isLoading={isLoading} />
         </div>
       </section>
 
@@ -34,18 +73,34 @@ export default async function HomePage() {
         <div className="container">
           <div className="text-center">
             <h2 className="text-3xl md:text-4xl font-bold font-headline">
-              Popular Vehicles
+              {isSearching ? 'Search Results' : 'Popular Vehicles'}
             </h2>
             <p className="mt-2 text-muted-foreground max-w-xl mx-auto">
-              Browse our most popular cars and bikes available for rent right
-              now.
+              {isSearching
+                ? 'Vehicles matching your search criteria'
+                : 'Browse our most popular cars and bikes available for rent right now.'}
             </p>
           </div>
-          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {popularVehicles?.map((vehicle) => (
-              <VehicleCard key={vehicle.id} vehicle={vehicle} />
-            ))}
-          </div>
+
+          {isLoading ? (
+            <div className="mt-12 flex justify-center">
+              <div className="text-muted-foreground">Loading vehicles...</div>
+            </div>
+          ) : vehicles.length === 0 ? (
+            <div className="mt-12 text-center">
+              <p className="text-muted-foreground">
+                {isSearching
+                  ? 'No vehicles found matching your search criteria.'
+                  : 'No vehicles available at the moment.'}
+              </p>
+            </div>
+          ) : (
+            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {vehicles.map((vehicle) => (
+                <VehicleCard key={vehicle.id} vehicle={vehicle} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </div>

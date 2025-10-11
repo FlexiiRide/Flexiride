@@ -1,5 +1,10 @@
 'use server';
-import { getMyVehicles } from './actions/vehicles-action';
+import {
+  getMyVehicles,
+  getPopularVehicles,
+  getSearchedVehicles,
+  getVehiclesById,
+} from './actions/vehicles-action';
 import { type User, type Vehicle, type Booking } from './types';
 
 const mockUsers: User[] = [
@@ -143,10 +148,47 @@ export async function getVehicles(filters?: {
   return vehicles;
 }
 
+export async function getAllPopularVehicles(filters?: {
+  limit?: number;
+  type?: 'car' | 'bike';
+}): Promise<Vehicle[]> {
+  await delay(300);
+
+  const result = await getPopularVehicles(filters);
+
+  if (!result.success || !result.data) {
+    return [];
+  }
+
+  return result.data;
+}
+
+export async function searchVehicles(filters: {
+  location?: string;
+  from?: string;
+  to?: string;
+}): Promise<Vehicle[]> {
+  await delay(500);
+
+  // Get all vehicles
+  let vehicles = (await getSearchedVehicles(filters))
+    ?.data as unknown as Vehicle[];
+
+  if (!vehicles) {
+    return [];
+  }
+  return vehicles;
+}
+
 export async function getVehicleById(id: string): Promise<Vehicle | undefined> {
   await delay(200);
-  const vehicles = await getVehicles();
-  return vehicles.find((vehicle) => vehicle.id === id);
+  const result = await getVehiclesById(id);
+
+  if (!result.success || !result.data) {
+    return undefined;
+  }
+
+  return result.data;
 }
 
 // Booking Functions

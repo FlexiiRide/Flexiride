@@ -19,7 +19,6 @@ import { Camera, Loader2, User as UserIcon } from 'lucide-react';
 // Form validation schema
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  phone: z.string().min(10, 'Phone number must be at least 10 characters'),
   bio: z.string().max(500, 'Bio must be less than 500 characters').optional(),
 });
 
@@ -46,7 +45,6 @@ export default function ProfileClient({ user }: ProfileClientProps) {
     resolver: zodResolver(profileSchema),
     defaultValues: {
       name: user.name || '',
-      phone: user.phone || '',
       bio: user.bio || '',
     },
   });
@@ -95,7 +93,6 @@ export default function ProfileClient({ user }: ProfileClientProps) {
     setImagePreview(null);
     reset({
       name: user.name || '',
-      phone: user.phone || '',
       bio: user.bio || '',
     });
     if (fileInputRef.current) {
@@ -114,16 +111,18 @@ export default function ProfileClient({ user }: ProfileClientProps) {
     }
 
     setIsLoading(true);
+    console.log('Starting profile update...', { data, selectedImage });
 
     try {
       const updateData = {
         name: data.name,
-        phone: data.phone,
         bio: data.bio,
         ...(selectedImage && { avatar: selectedImage }),
       };
 
+      console.log('Calling updateUserDetails with:', updateData);
       const result = await updateUserDetails(user.id, updateData);
+      console.log('Update result:', result);
 
       if (result.success) {
         toast({
@@ -139,19 +138,16 @@ export default function ProfileClient({ user }: ProfileClientProps) {
         // Refresh user session with updated data
         await refreshUserSession(user.id);
         
-        // Refresh the page to reflect changes
-        window.location.reload();
+        // Wait a bit for toast to show, then refresh the page
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
       } else {
         toast({
           title: 'Update failed',
-          description: result.error || 'Failed to update profile',
+          description: 'Failed to update profile',
           variant: 'destructive',
         });
-
-        if (result.isAuthError) {
-          // Redirect to login if authentication error
-          window.location.href = '/login';
-        }
       }
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -241,19 +237,6 @@ export default function ProfileClient({ user }: ProfileClientProps) {
               <p className="text-xs text-muted-foreground">
                 Email cannot be changed
               </p>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                {...register('phone')}
-                disabled={!isEditing || isLoading}
-                className={errors.phone ? 'border-destructive' : ''}
-              />
-              {errors.phone && (
-                <p className="text-sm text-destructive">{errors.phone.message}</p>
-              )}
             </div>
 
             <div className="grid gap-2">

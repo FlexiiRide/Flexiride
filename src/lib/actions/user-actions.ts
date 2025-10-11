@@ -6,7 +6,6 @@ import { User } from '@/lib/types';
 export interface UpdateUserData {
   name?: string;
   bio?: string;
-  phone?: string;
   avatar?: File;
 }
 
@@ -54,15 +53,13 @@ export async function updateUserDetails(userId: string, userData: UpdateUserData
       formData.append('bio', userData.bio);
     }
     
-    if (userData.phone) {
-      formData.append('phone', userData.phone);
-    }
-    
     if (userData.avatar) {
       formData.append('avatar', userData.avatar);
     }
 
+    console.log('Making API call to:', `/users/${userId}`);
     const response = await api.put<User>(`/users/${userId}`, formData);
+    console.log('API response:', response);
     
     if (!response.success) {
       return {

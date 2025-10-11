@@ -24,18 +24,19 @@ export async function checkTokenExpiration(): Promise<{
   isValid: boolean;
   isExpired: boolean;
   expiresAt?: Date;
+  hasToken: boolean;
 }> {
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get('access-token')?.value;
 
     if (!accessToken) {
-      return { isValid: false, isExpired: false };
+      return { isValid: false, isExpired: false, hasToken: false };
     }
 
     const payload = decodeJwt(accessToken);
     if (!payload?.exp) {
-      return { isValid: false, isExpired: false };
+      return { isValid: false, isExpired: false, hasToken: false, };
     }
 
     const expiresAt = new Date(payload.exp * 1000);
@@ -46,10 +47,11 @@ export async function checkTokenExpiration(): Promise<{
       isValid: !isExpired,
       isExpired,
       expiresAt,
+      hasToken: true
     };
   } catch (error) {
     console.error('Error checking token:', error);
-    return { isValid: false, isExpired: false };
+    return { isValid: false, isExpired: false, hasToken: false };
   }
 }
 

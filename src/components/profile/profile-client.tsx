@@ -73,7 +73,7 @@ export default function ProfileClient({ user }: ProfileClientProps) {
       }
 
       setSelectedImage(file);
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -111,7 +111,6 @@ export default function ProfileClient({ user }: ProfileClientProps) {
     }
 
     setIsLoading(true);
-    console.log('Starting profile update...', { data, selectedImage });
 
     try {
       const updateData = {
@@ -120,9 +119,7 @@ export default function ProfileClient({ user }: ProfileClientProps) {
         ...(selectedImage && { avatar: selectedImage }),
       };
 
-      console.log('Calling updateUserDetails with:', updateData);
       const result = await updateUserDetails(user.id, updateData);
-      console.log('Update result:', result);
 
       if (result.success) {
         toast({
@@ -130,14 +127,14 @@ export default function ProfileClient({ user }: ProfileClientProps) {
           description: result.message || 'Profile updated successfully',
           variant: 'default',
         });
-        
+
         setIsEditing(false);
         setSelectedImage(null);
         setImagePreview(null);
-        
+
         // Refresh user session with updated data
         await refreshUserSession(user.id);
-        
+
         // Wait a bit for toast to show, then refresh the page
         setTimeout(() => {
           window.location.reload();
@@ -168,7 +165,7 @@ export default function ProfileClient({ user }: ProfileClientProps) {
       <h1 className="text-2xl md:text-3xl font-bold font-headline mb-6 md:mb-8">
         Your Profile
       </h1>
-      
+
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
           <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
@@ -179,7 +176,7 @@ export default function ProfileClient({ user }: ProfileClientProps) {
                   <UserIcon className="h-10 w-10 md:h-12 md:w-12" />
                 </AvatarFallback>
               </Avatar>
-              
+
               {isEditing && (
                 <Button
                   type="button"
@@ -192,7 +189,7 @@ export default function ProfileClient({ user }: ProfileClientProps) {
                   <Camera className="h-4 w-4" />
                 </Button>
               )}
-              
+
               <input
                 ref={fileInputRef}
                 type="file"
@@ -201,7 +198,7 @@ export default function ProfileClient({ user }: ProfileClientProps) {
                 className="hidden"
               />
             </div>
-            
+
             <div className="text-center md:text-left">
               <CardTitle className="text-xl md:text-2xl">{user.name}</CardTitle>
               <p className="text-muted-foreground capitalize">{user.role}</p>
@@ -209,9 +206,12 @@ export default function ProfileClient({ user }: ProfileClientProps) {
             </div>
           </div>
         </CardHeader>
-        
+
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-4 md:space-y-6"
+          >
             <div className="grid gap-2">
               <Label htmlFor="name">Full Name</Label>
               <Input
@@ -221,7 +221,9 @@ export default function ProfileClient({ user }: ProfileClientProps) {
                 className={errors.name ? 'border-destructive' : ''}
               />
               {errors.name && (
-                <p className="text-sm text-destructive">{errors.name.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.name.message}
+                </p>
               )}
             </div>
 

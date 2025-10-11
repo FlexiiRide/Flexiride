@@ -15,7 +15,7 @@ export interface UpdateUserData {
 export async function getUserDetails(userId: string) {
   try {
     const response = await api.get<User>(`/users/${userId}`);
-    
+
     if (!response.success) {
       return {
         success: false,
@@ -40,27 +40,28 @@ export async function getUserDetails(userId: string) {
 /**
  * Update user details
  */
-export async function updateUserDetails(userId: string, userData: UpdateUserData) {
+export async function updateUserDetails(
+  userId: string,
+  userData: UpdateUserData
+) {
   try {
     // Create FormData for multipart/form-data request
     const formData = new FormData();
-    
+
     if (userData.name) {
       formData.append('name', userData.name);
     }
-    
+
     if (userData.bio) {
       formData.append('bio', userData.bio);
     }
-    
+
     if (userData.avatar) {
       formData.append('avatar', userData.avatar);
     }
 
-    console.log('Making API call to:', `/users/${userId}`);
     const response = await api.put<User>(`/users/${userId}`, formData);
-    console.log('API response:', response);
-    
+
     if (!response.success) {
       return {
         success: false,

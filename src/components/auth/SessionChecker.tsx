@@ -38,7 +38,7 @@ export function SessionChecker() {
 
   useEffect(() => {
     const checkSession = async () => {
-      const { isExpired, expiresAt, isValid, hasToken } =
+      const { isExpired, expiresAt, hasToken } =
         await checkTokenExpiration();
 
       if (!hasToken) return;

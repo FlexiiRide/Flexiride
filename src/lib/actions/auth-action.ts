@@ -37,6 +37,16 @@ export async function login(
   const { email, password } = validatedFields.data;
 
   try {
+    // Validate API URL is configured
+    if (!process.env.API_BASE_URL) {
+      console.error('API_BASE_URL is not configured');
+      return {
+        errors: {
+          server: ['Server configuration error. Please try again later.'],
+        },
+      };
+    }
+
     const res = await fetch(`${process.env.API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -128,6 +138,16 @@ export async function signup(
   const { name, email, password, role } = validatedFields.data;
 
   try {
+    // Validate API URL is configured
+    if (!process.env.API_BASE_URL) {
+      console.error('API_BASE_URL is not configured');
+      return {
+        errors: {
+          server: ['Server configuration error. Please try again later.'],
+        },
+      };
+    }
+
     const res = await fetch(`${process.env.API_BASE_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -137,7 +157,7 @@ export async function signup(
     if (!res.ok) {
       const errorData = await res.json();
       return {
-        errors: { server: [errorData.message || 'Invalid credentials'] },
+        errors: { server: [errorData.message || 'Failed to create account'] },
       };
     }
 
@@ -165,9 +185,9 @@ export async function signup(
       maxAge: 60 * 60 * 24 * 7,
       path: '/',
     });
-
-    redirect('/dashboard');
   } catch (error) {
     return { errors: { server: ['Something went wrong.'] } };
   }
+
+  redirect('/dashboard');
 }

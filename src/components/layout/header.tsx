@@ -6,7 +6,7 @@ import {
   LayoutDashboard,
   User as UserIcon,
   LogOut,
-  Settings,
+  // Settings,
 } from 'lucide-react';
 import { getCurrentUser } from '@/lib/auth';
 import { logout } from '@/lib/actions/auth-action';
@@ -72,11 +72,11 @@ export async function Header() {
                       <UserIcon className="mr-2 h-4 w-4" /> Profile
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
+                  {/* <DropdownMenuItem asChild>
                     <Link href="/settings">
                       <Settings className="mr-2 h-4 w-4" /> Settings
                     </Link>
-                  </DropdownMenuItem>
+                  </DropdownMenuItem> */}
                   <DropdownMenuSeparator />
                   <form action={logout}>
                     <DropdownMenuItem asChild>

@@ -1,7 +1,6 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
 const loginSchema = z.object({

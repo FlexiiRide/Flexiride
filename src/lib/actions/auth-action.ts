@@ -77,11 +77,10 @@ export async function login(
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     });
+    return { message: 'Login successful' };
   } catch (error) {
     return { errors: { server: ['Something went wrong.'] } };
   }
-
-  redirect('/dashboard');
 }
 
 export async function logout() {
@@ -89,7 +88,6 @@ export async function logout() {
   cookieStore.delete('session-user');
   cookieStore.delete('access-token');
   cookieStore.delete('refresh-token');
-  redirect('/login');
 }
 
 const signupSchema = z.object({
@@ -166,7 +164,7 @@ export async function signup(
       path: '/',
     });
 
-    redirect('/dashboard');
+    return { message: 'Signup successful' };
   } catch (error) {
     return { errors: { server: ['Something went wrong.'] } };
   }

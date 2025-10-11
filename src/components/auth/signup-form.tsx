@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import Link from 'next/link';
@@ -19,6 +19,8 @@ import {
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useRouter } from 'next/navigation';
+import { toast } from '@/hooks/use-toast';
 
 function SignupButton() {
   const { pending } = useFormStatus();
@@ -37,7 +39,28 @@ export function SignupForm() {
 
   const [state, dispatch] = useActionState(signup, initialState);
   const [role, setRole] = useState('client');
+  const router = useRouter();
 
+  // 🔍 Toast notifications
+  useEffect(() => {
+    if (!state?.message) return;
+
+    if (state.message === 'Signup successful') {
+      toast({
+        title: '✅ Account Created',
+        description: 'Redirecting to dashboard...',
+      });
+      setTimeout(() => router.push('/dashboard'), 1500);
+    } else if (state.message.includes('Failed') || state?.errors?.server) {
+      toast({
+        variant: 'destructive',
+        title: '❌ Signup Failed',
+        description:
+          state.errors?.server?.[0] || 'Invalid credentials. Please try again.',
+      });
+    }
+  }, [state, router]);
+  
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>

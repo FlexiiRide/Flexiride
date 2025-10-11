@@ -4,7 +4,8 @@ export type User = {
   email: string;
   phone: string;
   role: 'owner' | 'client';
-  avatarUrl?: string;
+  avatarUrl: string;
+  bio?: string;
   passwordHash: string; // For mock auth
 };
 

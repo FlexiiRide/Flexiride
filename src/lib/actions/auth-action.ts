@@ -1,6 +1,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -36,6 +37,16 @@ export async function login(
   const { email, password } = validatedFields.data;
 
   try {
+    // Validate API URL is configured
+    if (!process.env.API_BASE_URL) {
+      console.error('API_BASE_URL is not configured');
+      return {
+        errors: {
+          server: ['Server configuration error. Please try again later.'],
+        },
+      };
+    }
+
     const res = await fetch(`${process.env.API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -76,10 +87,11 @@ export async function login(
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     });
-    return { message: 'Login successful' };
   } catch (error) {
     return { errors: { server: ['Something went wrong.'] } };
   }
+
+  redirect('/dashboard');
 }
 
 export async function logout() {
@@ -87,6 +99,7 @@ export async function logout() {
   cookieStore.delete('session-user');
   cookieStore.delete('access-token');
   cookieStore.delete('refresh-token');
+  redirect('/login');
 }
 
 const signupSchema = z.object({
@@ -125,6 +138,16 @@ export async function signup(
   const { name, email, password, role } = validatedFields.data;
 
   try {
+    // Validate API URL is configured
+    if (!process.env.API_BASE_URL) {
+      console.error('API_BASE_URL is not configured');
+      return {
+        errors: {
+          server: ['Server configuration error. Please try again later.'],
+        },
+      };
+    }
+
     const res = await fetch(`${process.env.API_BASE_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -134,7 +157,7 @@ export async function signup(
     if (!res.ok) {
       const errorData = await res.json();
       return {
-        errors: { server: [errorData.message || 'Invalid credentials'] },
+        errors: { server: [errorData.message || 'Failed to create account'] },
       };
     }
 
@@ -162,9 +185,9 @@ export async function signup(
       maxAge: 60 * 60 * 24 * 7,
       path: '/',
     });
-
-    return { message: 'Signup successful' };
   } catch (error) {
     return { errors: { server: ['Something went wrong.'] } };
   }
+
+  redirect('/dashboard');
 }

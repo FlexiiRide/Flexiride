@@ -35,7 +35,7 @@ export function DashboardClient({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingsState, setBookingsState] =
     useState<EnrichedBooking[]>(bookings); // using a local state to update the same bookings
-  const [loadingAction] = useState<{ [key: string]: string }>({});
+  const [loadingAction, setLoadingAction] = useState<{ [key: string]: string }>({});
 
   const router = useRouter();
   const { toast } = useToast();
@@ -166,7 +166,7 @@ export function DashboardClient({
                 Welcome, {user.name.split(' ')[0]}!
               </h1>
               <p className="text-muted-foreground mt-2">
-                Here&apos;s a quick overview of your Account.
+                Here's a quick overview of your Account.
               </p>
             </div>
           </div>
@@ -260,7 +260,7 @@ export function DashboardClient({
                             {format(new Date(booking.to), 'PPP p')}
                           </div>
                           <p className="text-sm font-semibold text-gray-800 dark:text-white">
-                            LKR {booking.totalPrice.toFixed(2)}
+                            $ {booking.totalPrice.toFixed(2)}
                           </p>
                         </div>
                       </div>

@@ -43,3 +43,9 @@ export type Booking = {
   paymentMethod: 'cash';
   pickupDetails: string;
 };
+
+export type EnrichedBooking = Booking & {
+  vehicle?: Vehicle;
+  owner?: User;
+  client?: User;
+};

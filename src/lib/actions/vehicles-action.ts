@@ -195,3 +195,22 @@ export async function updateVehicleStatus(
     };
   }
 }
+export async function getVehicleById(id: string): Promise<Vehicle | undefined> {
+  try {
+    const token = await getValidToken();
+    if (!token) return undefined;
+
+    const baseUrl = process.env.API_BASE_URL;
+    const response = await fetch(`${baseUrl}/vehicles/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    });
+
+    if (!response.ok) return undefined;
+    const vehicle: Vehicle = await response.json();
+    return vehicle;
+  } catch (error) {
+    console.error('Error fetching vehicle by ID:', error);
+    return undefined;
+  }
+}

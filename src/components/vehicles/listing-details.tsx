@@ -52,7 +52,7 @@ export function ListingDetails({ vehicle, owner }: ListingDetailsProps) {
         <div>
           <Carousel className="w-full">
             <CarouselContent>
-              {vehicle.images.map((img, index) => (
+              {vehicle?.images?.map((img, index) => (
                 <CarouselItem key={index}>
                   <div className="relative aspect-[4/3] rounded-lg overflow-hidden">
                     <Image

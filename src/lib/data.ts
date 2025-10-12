@@ -1,6 +1,9 @@
 'use server';
 import { getMyVehicles } from './actions/vehicles-action';
-import { type User, type Vehicle, type Booking } from './types';
+import { type User, type EnrichedBooking, type Vehicle, type Booking } from './types';
+import { getMyBookings, getBookingsForOwner } from './actions/bookings-action';
+import { getUserById } from './auth';
+import { getVehicleById } from './actions/vehicles-action';
 
 const mockUsers: User[] = [
   {
@@ -106,12 +109,6 @@ export async function getUsers(filter?: { role?: string }): Promise<User[]> {
   return mockUsers;
 }
 
-export async function getUserById(id: string): Promise<User | undefined> {
-  await delay(100);
-  const users = await getUsers();
-  return users.find((user) => user.id === id);
-}
-
 export async function getUserByEmail(email: string): Promise<User | undefined> {
   await delay(100);
   const users = await getUsers();
@@ -143,34 +140,36 @@ export async function getVehicles(filters?: {
   return vehicles;
 }
 
-export async function getVehicleById(id: string): Promise<Vehicle | undefined> {
-  await delay(200);
-  const vehicles = await getVehicles();
-  return vehicles.find((vehicle) => vehicle.id === id);
-}
+// export async function getVehicleById(id: string): Promise<Vehicle | undefined> {
+//   await delay(200);
+//   const vehicles = await getVehicles();
+//   return vehicles.find((vehicle) => vehicle.id === id);
+// }
 
-// Booking Functions
-export async function getBookings(filters: {
-  ownerId?: string;
-  clientId?: string;
-  vehicleId?: string;
-}): Promise<Booking[]> {
-  await delay(300);
-  let bookings = mockBookings as Booking[];
-  if (filters.ownerId) {
-    bookings = bookings.filter((b) => b.ownerId === filters.ownerId);
-  }
-  if (filters.clientId) {
-    bookings = bookings.filter((b) => b.clientId === filters.clientId);
-  }
-  if (filters.vehicleId) {
-    bookings = bookings.filter((b) => b.vehicleId === filters.vehicleId);
-  }
-  return bookings;
-}
+// ------------------------------------------------------------------
+// BOOKING FUNCTIONS ( NOW USING REAL BACKEND DATA)
+// ------------------------------------------------------------------
+export async function getEnrichedBookings(
+  forOwner: boolean
+): Promise<EnrichedBooking[]> {
+  try {
+    const res = forOwner ? await getBookingsForOwner() : await getMyBookings();
+    if (!res.success || !res.data) return [];
 
-export async function getBookingById(id: string): Promise<Booking | undefined> {
-  await delay(100);
-  const bookings = mockBookings as Booking[];
-  return bookings.find((booking) => booking.id === id);
+    const bookings = res.data;
+
+    const enriched: EnrichedBooking[] = await Promise.all(
+      bookings.map(async (b) => ({
+        ...b,
+        vehicle: await getVehicleById(b.vehicleId),
+        owner: await getUserById(b.ownerId),
+        client: await getUserById(b.clientId),
+      }))
+    );
+
+    return enriched;
+  } catch (err) {
+    console.error('Error enriching bookings:', err);
+    return [];
+  }
 }

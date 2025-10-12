@@ -1,6 +1,6 @@
 import { getCurrentUser } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { getBookings, getVehicles } from '@/lib/data';
+import { getEnrichedBookings, getVehicles } from '@/lib/data';
 import { DashboardClient } from './dashboard-client';
 
 export default async function DashboardPage() {
@@ -11,10 +11,14 @@ export default async function DashboardPage() {
   }
 
   const isOwner = user.role === 'owner';
-  const bookings = await getBookings(
-    isOwner ? { ownerId: user.id } : { clientId: user.id }
-  );
-  const myVehicles = isOwner ? await getVehicles({ ownerId: user.id }) : [];
+  
+  
+  const myVehicles = isOwner
+    ? await getVehicles({ ownerId: user.id }) // only current owner's vehicles
+    : [];
+
+  /// Fetch enriched bookings
+  const bookings = await getEnrichedBookings(isOwner);
 
   return (
     <DashboardClient

@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect } from 'react';
+import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import Link from 'next/link';
 import { login, LoginState } from '@/lib/actions/auth-action';
@@ -17,8 +17,6 @@ import {
 } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
 
 function LoginButton() {
   const { pending } = useFormStatus();
@@ -34,32 +32,7 @@ export function LoginForm() {
     errors: {},
     message: null,
   };
-  const router = useRouter();
-  const { toast } = useToast();
   const [state, dispatch] = useActionState(login, initialState);
-
-  // Trigger toast notifications when message changes
-  useEffect(() => {
-    if (!state?.message) return;
-
-    if (state.message === 'Login successful') {
-      toast({
-        title: '✅ Login Successful',
-        description: 'Redirecting...',
-      });
-
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 1500);
-    } else if (state.message.includes('Failed') || state?.errors?.server) {
-      toast({
-        variant: 'destructive',
-        title: 'Login Failed',
-        description:
-          state.errors?.server?.[0] || 'Invalid credentials. Please try again.',
-      });
-    }
-  }, [state, toast, router]);
 
   return (
     <Card className="w-full max-w-sm">

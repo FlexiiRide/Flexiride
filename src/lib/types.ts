@@ -4,7 +4,8 @@ export type User = {
   email: string;
   phone: string;
   role: 'owner' | 'client';
-  avatarUrl?: string;
+  avatarUrl: string;
+  bio?: string;
   passwordHash: string; // For mock auth
 };
 
@@ -42,4 +43,10 @@ export type Booking = {
   status: 'requested' | 'approved' | 'rejected' | 'cancelled';
   paymentMethod: 'cash';
   pickupDetails: string;
+};
+
+export type EnrichedBooking = Booking & {
+  vehicle?: Vehicle;
+  owner?: User;
+  client?: User;
 };

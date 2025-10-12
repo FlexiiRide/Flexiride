@@ -30,7 +30,9 @@ import { toast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 
 export function Header() {
-  const [user, setUser] = useState<null | Awaited<ReturnType<typeof getCurrentUser>>>(null);
+  const [user, setUser] = useState<null | Awaited<
+    ReturnType<typeof getCurrentUser>
+  >>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -49,11 +51,11 @@ export function Header() {
         router.push('/login'); // redirect after toast
       }, 1000);
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: '❌ Logout Failed',
-        description: 'Something went wrong. Please try again.',
-      });
+      // toast({
+      //   variant: 'destructive',
+      //   title: '❌ Logout Failed',
+      //   description: 'Something went wrong. Please try again.',
+      // });
     }
   };
 
@@ -109,7 +111,10 @@ export function Header() {
                   </DropdownMenuItem> */}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <button onClick={handleLogout} className="w-full flex items-center gap-2">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2"
+                    >
                       <LogOut className="h-4 w-4" /> Log out
                     </button>
                   </DropdownMenuItem>

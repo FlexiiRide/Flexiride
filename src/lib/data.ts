@@ -5,7 +5,8 @@ import {
   getSearchedVehicles,
   getVehiclesById,
 } from './actions/vehicles-action';
-import { type User, type Vehicle, type Booking } from './types';
+import { type User, type EnrichedBooking, type Vehicle } from './types';
+import { getMyBookings, getBookingsForOwner } from './actions/bookings-action';
 
 const mockUsers: User[] = [
   {
@@ -43,57 +44,6 @@ const mockUsers: User[] = [
     role: 'client',
     avatarUrl: 'https://picsum.photos/seed/u4/100/100',
     passwordHash: 'password123',
-  },
-];
-
-const mockBookings: Booking[] = [
-  {
-    id: 'b_1',
-    vehicleId: 'v_100',
-    clientId: 'u_2',
-    ownerId: 'u_1',
-    from: '2025-09-22T09:00:00.000Z',
-    to: '2025-09-22T15:00:00.000Z',
-    totalPrice: 39.0,
-    status: 'approved',
-    paymentMethod: 'cash',
-    pickupDetails: 'Meet at parking spot A',
-  },
-  {
-    id: 'b_2',
-    vehicleId: 'v_101',
-    clientId: 'u_4',
-    ownerId: 'u_3',
-    from: '2025-09-21T10:00:00.000Z',
-    to: '2025-09-21T18:00:00.000Z',
-    totalPrice: 20.0,
-    status: 'requested',
-    paymentMethod: 'cash',
-    pickupDetails: '',
-  },
-  {
-    id: 'b_3',
-    vehicleId: 'v_102',
-    clientId: 'u_2',
-    ownerId: 'u_1',
-    from: '2025-09-27T10:00:00.000Z',
-    to: '2025-09-28T18:00:00.000Z',
-    totalPrice: 70.0,
-    status: 'rejected',
-    paymentMethod: 'cash',
-    pickupDetails: '',
-  },
-  {
-    id: 'b_4',
-    vehicleId: 'v_100',
-    clientId: 'u_4',
-    ownerId: 'u_1',
-    from: '2025-09-25T11:00:00.000Z',
-    to: '2025-09-25T13:00:00.000Z',
-    totalPrice: 13.0,
-    status: 'cancelled',
-    paymentMethod: 'cash',
-    pickupDetails: '',
   },
 ];
 
@@ -191,28 +141,30 @@ export async function getVehicleById(id: string): Promise<Vehicle | undefined> {
   return result.data;
 }
 
-// Booking Functions
-export async function getBookings(filters: {
-  ownerId?: string;
-  clientId?: string;
-  vehicleId?: string;
-}): Promise<Booking[]> {
-  await delay(300);
-  let bookings = mockBookings as Booking[];
-  if (filters.ownerId) {
-    bookings = bookings.filter((b) => b.ownerId === filters.ownerId);
-  }
-  if (filters.clientId) {
-    bookings = bookings.filter((b) => b.clientId === filters.clientId);
-  }
-  if (filters.vehicleId) {
-    bookings = bookings.filter((b) => b.vehicleId === filters.vehicleId);
-  }
-  return bookings;
-}
+// ------------------------------------------------------------------
+// BOOKING FUNCTIONS ( NOW USING REAL BACKEND DATA)
+// ------------------------------------------------------------------
+export async function getEnrichedBookings(
+  forOwner: boolean
+): Promise<EnrichedBooking[]> {
+  try {
+    const res = forOwner ? await getBookingsForOwner() : await getMyBookings();
+    if (!res.success || !res.data) return [];
 
-export async function getBookingById(id: string): Promise<Booking | undefined> {
-  await delay(100);
-  const bookings = mockBookings as Booking[];
-  return bookings.find((booking) => booking.id === id);
+    const bookings = res.data;
+
+    const enriched: EnrichedBooking[] = await Promise.all(
+      bookings.map(async (b) => ({
+        ...b,
+        vehicle: await getVehicleById(b.vehicleId),
+        owner: await getUserById(b.ownerId),
+        client: await getUserById(b.clientId),
+      }))
+    );
+
+    return enriched;
+  } catch (err) {
+    console.error('Error enriching bookings:', err);
+    return [];
+  }
 }

@@ -60,7 +60,7 @@ export function SignupForm() {
       });
     }
   }, [state, router]);
-  
+
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>

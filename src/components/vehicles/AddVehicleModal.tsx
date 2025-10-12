@@ -13,6 +13,7 @@ import {
   Trash2,
   Check,
   Image as ImageIcon,
+  Loader,
 } from 'lucide-react';
 import {
   Dialog,
@@ -56,6 +57,21 @@ interface AddVehicleModalProps {
   isSubmitting?: boolean;
 }
 
+const initialFormData: VehicleFormData = {
+  title: '',
+  type: 'car',
+  pricePerHour: '',
+  pricePerDay: '',
+  location: {
+    address: '',
+    lat: '',
+    lng: '',
+  },
+  images: [],
+  availableRanges: [{ from: '', to: '' }],
+  description: '',
+};
+
 export function AddVehicleModal({
   isOpen,
   onClose,
@@ -63,21 +79,7 @@ export function AddVehicleModal({
   isSubmitting = false,
 }: AddVehicleModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState<VehicleFormData>({
-    title: '',
-    type: 'car',
-    pricePerHour: '',
-    pricePerDay: '',
-    location: {
-      address: '',
-      lat: '',
-      lng: '',
-    },
-    images: [],
-    availableRanges: [{ from: '', to: '' }],
-    description: '',
-  });
+  const [formData, setFormData] = useState<VehicleFormData>(initialFormData);
 
   const updateField = (field: keyof VehicleFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -173,19 +175,32 @@ export function AddVehicleModal({
       return;
     }
 
-    setIsLoading(true);
-
     try {
       await onSubmit(formData);
+      // Clear form and reset state on successful submission
+      setFormData(initialFormData);
+      setCurrentStep(1);
+      onClose();
     } catch (error) {
       console.error('Submit error:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  // eslint-disable-next-line no-unused-vars
-  const isProcessing = isLoading || isSubmitting;
+  const handleClose = () => {
+    setFormData(initialFormData);
+    setCurrentStep(1);
+    onClose();
+  };
+
+  const handleDialogOpenChange = (open: boolean) => {
+    if (open === false) {
+      setFormData(initialFormData);
+      setCurrentStep(1);
+    }
+    onClose();
+  };
+
+  const isProcessing = isSubmitting;
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -587,7 +602,7 @@ export function AddVehicleModal({
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Pricing:</span>
                   <span className="font-semibold">
-                    ${formData.pricePerHour || '0'}/hr · LKR
+                    LKR{formData.pricePerHour || '0'}/hr · LKR
                     {formData.pricePerDay || '0'}/day
                   </span>
                 </div>
@@ -620,8 +635,23 @@ export function AddVehicleModal({
   const canProceed = validateStep(currentStep);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] p-0 flex flex-col">
+        {/* Loading Overlay */}
+        {isProcessing && (
+          <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center z-50">
+            <div className="bg-background rounded-lg p-8 flex flex-col items-center gap-4">
+              <Loader className="w-10 h-10 animate-spin text-primary" />
+              <div className="text-center">
+                <p className="font-semibold text-lg">Creating Vehicle</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Please wait while we set up your vehicle...
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <DialogHeader className="p-6 border-b">
           <div className="flex items-center justify-between">
@@ -686,7 +716,7 @@ export function AddVehicleModal({
         <div className="flex items-center justify-between p-6 border-t">
           <button
             onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
-            disabled={currentStep === 1}
+            disabled={currentStep === 1 || isProcessing}
             className="px-6 py-2.5 rounded-lg font-semibold border-2 border-input hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Previous
@@ -694,8 +724,9 @@ export function AddVehicleModal({
 
           <div className="flex gap-2">
             <button
-              onClick={onClose}
-              className="px-6 py-2.5 rounded-lg font-semibold text-muted-foreground hover:bg-muted transition-colors"
+              onClick={handleClose}
+              disabled={isProcessing}
+              className="px-6 py-2.5 rounded-lg font-semibold text-muted-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
@@ -703,15 +734,22 @@ export function AddVehicleModal({
             {currentStep === steps.length ? (
               <button
                 onClick={handleSubmit}
-                disabled={!canProceed}
-                className="px-8 py-2.5 rounded-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!canProceed || isProcessing}
+                className="px-8 py-2.5 rounded-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                Create Vehicle
+                {isProcessing ? (
+                  <>
+                    <Loader className="w-4 h-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  'Create Vehicle'
+                )}
               </button>
             ) : (
               <button
                 onClick={handleNext}
-                disabled={!canProceed}
+                disabled={!canProceed || isProcessing}
                 className="px-6 py-2.5 rounded-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next

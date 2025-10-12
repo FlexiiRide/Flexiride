@@ -159,6 +159,165 @@ export async function deleteVehicle(
 }
 
 /**
+ * Get a single vehicle by ID (public endpoint - no auth required)
+ */
+export async function getVehiclesById(id: string): Promise<{
+  success: boolean;
+  data?: Vehicle;
+  error?: string;
+}> {
+  try {
+    const token = await getValidToken();
+    if (!token) return { success: false, error: 'Not authenticated' };
+
+    const baseUrl = process.env.API_BASE_URL;
+    if (!baseUrl) throw new Error('API_BASE_URL is not configured');
+
+    const url = `${baseUrl}/vehicles/${id}`;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { message: errorText };
+      }
+      throw new Error(errorData.message || 'Failed to fetch vehicle');
+    }
+
+    const vehicle = await response.json();
+    return { success: true, data: vehicle };
+  } catch (error) {
+    console.error('Error fetching vehicle by ID:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch vehicle',
+    };
+  }
+}
+
+/**
+ * Search vehicles based on location and date range
+ */
+export async function getSearchedVehicles(filters: {
+  location?: string;
+  from?: string;
+  to?: string;
+}): Promise<{
+  success: boolean;
+  data?: Vehicle[];
+  error?: string;
+}> {
+  try {
+    const baseUrl = process.env.API_BASE_URL;
+    if (!baseUrl) throw new Error('API_BASE_URL is not configured');
+
+    // Build query parameters
+    const params = new URLSearchParams();
+    if (filters.location) params.append('location', filters.location);
+    if (filters.from) params.append('from', filters.from);
+    if (filters.to) params.append('to', filters.to);
+
+    const url = `${baseUrl}/vehicles/search?${params.toString()}`;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { message: errorText };
+      }
+      throw new Error(errorData.message || 'Failed to search vehicles');
+    }
+
+    const vehicles = await response.json();
+    return { success: true, data: vehicles };
+  } catch (error) {
+    console.error('Error searching vehicles:', error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : 'Failed to search vehicles',
+    };
+  }
+}
+
+/**
+ * Get popular vehicles (public endpoint - no auth required)
+ * Currently returns most recent vehicles, will be updated to use booking count
+ */
+export async function getPopularVehicles(filters?: {
+  limit?: number;
+  type?: 'car' | 'bike';
+}): Promise<{
+  success: boolean;
+  data?: Vehicle[];
+  error?: string;
+}> {
+  try {
+    const baseUrl = process.env.API_BASE_URL;
+    if (!baseUrl) throw new Error('API_BASE_URL is not configured');
+
+    // Build query parameters
+    const params = new URLSearchParams();
+    if (filters?.limit) params.append('limit', filters.limit.toString());
+    if (filters?.type) params.append('type', filters.type);
+
+    const url = `${baseUrl}/vehicles/popular?${params.toString()}`;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { message: errorText };
+      }
+      throw new Error(errorData.message || 'Failed to fetch popular vehicles');
+    }
+
+    const vehicles = await response.json();
+    return { success: true, data: vehicles };
+  } catch (error) {
+    console.error('Error fetching popular vehicles:', error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to fetch popular vehicles',
+    };
+  }
+}
+
+/**
  * Update vehicle status
  */
 export async function updateVehicleStatus(
